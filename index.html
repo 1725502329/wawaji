@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#060818" />
+  <meta name="description" content="CLAWVERSE 星际抓娃娃——支持四个方向自由观察的网页版抓娃娃小游戏。" />
+  <title>CLAWVERSE · 星际抓娃娃</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app">
+    <canvas id="stage" aria-label="抓娃娃机游戏画面，支持四个方向观察" role="img"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="safe-probe" id="safeProbe" aria-hidden="true"></div>
+
+    <div class="ui">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span class="brand-star">✦</span>
+            <span class="brand-orbit"></span>
+          </div>
+          <div class="brand-copy">
+            <div class="brand-title">CLAW<span>VERSE</span></div>
+            <div class="brand-sub">星际抓娃娃 · 四向观察</div>
+          </div>
+        </div>
+
+        <div class="stats" aria-label="游戏数据">
+          <div class="stat stat-coin">
+            <span class="coin-ico" aria-hidden="true"></span>
+            <span class="stat-value" id="coinValue">10</span>
+            <span class="stat-unit">币</span>
+          </div>
+          <div class="stat stat-score">
+            <span class="stat-label">SCORE</span>
+            <span class="stat-value" id="scoreValue">0000</span>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="icon-btn" id="soundBtn" type="button" aria-label="关闭音效" aria-pressed="true" title="音效">
+            <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9.5v5h3.2L12 18V6L7.2 9.5H4Z" fill="currentColor"/>
+              <path d="M15.2 8.4a5.2 5.2 0 0 1 0 7.2M17.8 5.8a8.7 8.7 0 0 1 0 12.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9.5v5h3.2L12 18V6L7.2 9.5H4Z" fill="currentColor"/>
+              <path d="m15.5 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="helpBtn" type="button" aria-label="查看玩法说明" title="玩法说明">
+            <span class="help-glyph">?</span>
+          </button>
+        </div>
+      </header>
+
+      <aside class="collection-panel" aria-label="娃娃图鉴">
+        <div class="panel-kicker">COLLECTION</div>
+        <div class="collection-title">娃娃图鉴</div>
+        <div class="collection-list" id="collectionList">
+          <div class="collect-item" data-type="bear">
+            <canvas class="mini-plush" data-type="bear" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">棕熊</span>
+            <span class="collect-count" data-count="bear">0</span>
+          </div>
+          <div class="collect-item" data-type="bunny">
+            <canvas class="mini-plush" data-type="bunny" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">兔兔</span>
+            <span class="collect-count" data-count="bunny">0</span>
+          </div>
+          <div class="collect-item" data-type="penguin">
+            <canvas class="mini-plush" data-type="penguin" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">企鹅</span>
+            <span class="collect-count" data-count="penguin">0</span>
+          </div>
+          <div class="collect-item" data-type="duck">
+            <canvas class="mini-plush" data-type="duck" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">鸭鸭</span>
+            <span class="collect-count" data-count="duck">0</span>
+          </div>
+          <div class="collect-item" data-type="cat">
+            <canvas class="mini-plush" data-type="cat" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">橘猫</span>
+            <span class="collect-count" data-count="cat">0</span>
+          </div>
+          <div class="collect-item collect-rare" data-type="star">
+            <canvas class="mini-plush" data-type="star" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">星星</span>
+            <span class="collect-count" data-count="star">0</span>
+          </div>
+          <div class="collect-item collect-doodle" data-type="doodle">
+            <canvas class="mini-plush" data-type="doodle" width="96" height="96" aria-hidden="true"></canvas>
+            <span class="collect-name">涂鸦鸡</span>
+            <span class="collect-count" data-count="doodle">0</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="view-dock" aria-label="观察视角">
+        <div class="view-heading">
+          <span class="panel-kicker">VIEW</span>
+          <span class="view-current" id="viewName">正面</span>
+        </div>
+        <div class="view-grid">
+          <button class="view-btn" data-view="0" type="button" aria-label="切换到正面视角">
+            <span class="view-dir">↑</span><span>正面</span>
+          </button>
+          <button class="view-btn" data-view="1" type="button" aria-label="切换到右侧视角">
+            <span class="view-dir">→</span><span>右侧</span>
+          </button>
+          <button class="view-btn" data-view="3" type="button" aria-label="切换到左侧视角">
+            <span class="view-dir">←</span><span>左侧</span>
+          </button>
+          <button class="view-btn" data-view="2" type="button" aria-label="切换到背面视角">
+            <span class="view-dir">↓</span><span>背面</span>
+          </button>
+        </div>
+        <div class="view-tip">Q / E 旋转视角</div>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+      <footer class="control-deck">
+        <div class="move-cluster">
+          <div class="joystick" id="joystick" role="application" aria-label="移动爪子摇杆">
+            <span class="joy-arrow joy-up">▲</span>
+            <span class="joy-arrow joy-right">▶</span>
+            <span class="joy-arrow joy-down">▼</span>
+            <span class="joy-arrow joy-left">◀</span>
+            <div class="joy-knob" id="joyKnob"><span>✥</span></div>
+          </div>
+          <div class="move-label">MOVE</div>
+        </div>
+
+        <div class="hint-cluster">
+          <div class="aim-readout" id="aimReadout">
+            <span class="aim-dot"></span>
+            <span id="aimText">移动爪子，对准想要的娃娃</span>
+          </div>
+          <div class="key-hint">
+            <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</span>
+            <span class="hint-sep"></span>
+            <span><kbd>SPACE</kbd> 落爪</span>
+            <span class="hint-sep"></span>
+            <span><kbd>Q</kbd><kbd>E</kbd> 四向观察</span>
+          </div>
+        </div>
+
+        <div class="drop-cluster">
+          <button class="drop-btn" id="dropBtn" type="button" aria-label="放下爪子抓取娃娃">
+            <span class="drop-ring" aria-hidden="true"></span>
+            <span class="drop-main" id="dropMain">落爪</span>
+            <span class="drop-sub" id="dropSub">SPACE</span>
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <div class="overlay start-overlay" id="startOverlay">
+      <section class="modal start-modal" role="dialog" aria-modal="true" aria-labelledby="startTitle">
+        <div class="modal-glow" aria-hidden="true"></div>
+        <div class="start-eyebrow"><span></span> ARCADE / 01 <span></span></div>
+        <h1 class="start-title" id="startTitle">CLAW<span>VERSE</span></h1>
+        <p class="start-subtitle">星际抓娃娃 · 从四个方向，找到你的完美一爪</p>
+
+        <div class="start-toys" aria-hidden="true">
+          <div class="start-toy"><canvas class="mini-plush" data-type="bear" width="96" height="96"></canvas></div>
+          <div class="start-toy"><canvas class="mini-plush" data-type="bunny" width="96" height="96"></canvas></div>
+          <div class="start-toy"><canvas class="mini-plush" data-type="penguin" width="96" height="96"></canvas></div>
+          <div class="start-toy"><canvas class="mini-plush" data-type="duck" width="96" height="96"></canvas></div>
+          <div class="start-toy"><canvas class="mini-plush" data-type="cat" width="96" height="96"></canvas></div>
+          <div class="start-toy start-toy-rare"><canvas class="mini-plush" data-type="star" width="96" height="96"></canvas></div>
+          <div class="start-toy start-toy-doodle"><canvas class="mini-plush" data-type="doodle" width="96" height="96"></canvas></div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature">
+            <span class="feature-no">01</span>
+            <strong>四向观察</strong>
+            <small>正面 / 右侧 / 背面 / 左侧，转动视角看清爪子与娃娃的位置。</small>
+          </div>
+          <div class="feature">
+            <span class="feature-no">02</span>
+            <strong>精准下爪</strong>
+            <small>对准度越高，抓住的概率越大。看准再落爪。</small>
+          </div>
+          <div class="feature">
+            <span class="feature-no">03</span>
+            <strong>集齐图鉴</strong>
+            <small>抓中娃娃得积分并奖励 2 枚游戏币，集齐 7 款即通关。</small>
+          </div>
+        </div>
+
+        <div class="start-actions">
+          <button class="primary-btn" id="startBtn" type="button">
+            <span>投入硬币 · 开始游戏</span>
+            <span class="btn-shine" aria-hidden="true"></span>
+          </button>
+          <div class="start-meta">
+            <span><b>10</b> 枚初始游戏币</span>
+            <span class="meta-divider"></span>
+            <span>支持键盘 / 鼠标 / 触屏</span>
+          </div>
+        </div>
+        <div class="corner-mark corner-mark-a" aria-hidden="true"></div>
+        <div class="corner-mark corner-mark-b" aria-hidden="true"></div>
+      </section>
+    </div>
+
+    <div class="overlay is-hidden" id="helpOverlay">
+      <section class="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+        <button class="modal-close" id="helpClose" type="button" aria-label="关闭玩法说明">×</button>
+        <div class="panel-kicker">HOW TO PLAY</div>
+        <h2 id="helpTitle">玩法说明</h2>
+        <div class="help-grid">
+          <div class="help-block">
+            <h3>移动爪子</h3>
+            <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 或方向键移动。也可以用左下角摇杆拖拽。移动方向会跟随当前视角。</p>
+          </div>
+          <div class="help-block">
+            <h3>四向观察</h3>
+            <p>点击右侧视角按钮，或按 <kbd>Q</kbd> / <kbd>E</kbd> 让镜头绕娃娃机旋转。正面、右侧、背面、左侧都能清楚看到内部。</p>
+          </div>
+          <div class="help-block">
+            <h3>落爪抓取</h3>
+            <p>按 <kbd>SPACE</kbd> 或点击「落爪」。爪子下降后会自动判断是否抓住。地面上的准星越绿，对准度越高。</p>
+          </div>
+          <div class="help-block">
+            <h3>金币与积分</h3>
+            <p>每次下爪消耗 1 枚游戏币；抓中娃娃获得积分并奖励 2 枚游戏币。集齐全部 7 款娃娃即可通关。</p>
+          </div>
+        </div>
+        <div class="help-foot">
+          <span>小提示：涂鸦鸡是稀有款，积分最高，也最难抓。</span>
+          <button class="ghost-btn" id="helpResume" type="button">继续游戏</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay is-hidden" id="endOverlay">
+      <section class="modal end-modal" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+        <div class="end-badge" id="endBadge">MISSION</div>
+        <h2 id="endTitle">游戏结束</h2>
+        <p id="endText">再试一次，你一定可以抓到最喜欢的娃娃。</p>
+        <div class="end-stats">
+          <div><span>SCORE</span><strong id="endScore">0</strong></div>
+          <div><span>COLLECTED</span><strong id="endCollected">0 / 7</strong></div>
+          <div><span>BEST</span><strong id="endBest">0</strong></div>
+        </div>
+        <button class="primary-btn" id="againBtn" type="button"><span>再来一局</span><span class="btn-shine" aria-hidden="true"></span></button>
+      </section>
+    </div>
+
+    <noscript>本游戏需要启用 JavaScript 才能运行。</noscript>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
